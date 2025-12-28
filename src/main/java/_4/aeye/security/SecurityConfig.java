@@ -48,7 +48,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.GET, "/test/load","/users/phones").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/images/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()
+                //.anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
