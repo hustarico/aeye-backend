@@ -2,7 +2,6 @@ package _4.aeye.services;
 
 import _4.aeye.entites.Role;
 import _4.aeye.rep.RoleRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
