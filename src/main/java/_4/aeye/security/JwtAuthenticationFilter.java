@@ -47,21 +47,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                String username = jwtUtils.getUsernameFromToken(jwt);
                 
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
                 
-                // Extract roles from JWT token
-                List<String> rolesFromToken = jwtUtils.getRolesFromJwtToken(jwt);
+                // Extract role from JWT token
+                String roleFromToken = jwtUtils.getRoleFromToken(jwt);
                 Collection<GrantedAuthority> authorities = new ArrayList<>();
                 
-                if (rolesFromToken != null && !rolesFromToken.isEmpty()) {
-                    for (String role : rolesFromToken) {
-                        authorities.add(new SimpleGrantedAuthority(role));
-                    }
-                    logger.debug("Loaded roles from JWT token for user: " + username);
+                if (roleFromToken != null && !roleFromToken.isEmpty()) {
+                    authorities.add(new SimpleGrantedAuthority(roleFromToken));
+                    logger.debug("Loaded role from JWT token for user: " + username);
                 } else {
-                    // Fallback to authorities from UserDetails if roles not in token
+                    // Fallback to authorities from UserDetails if role not in token
                     authorities.addAll(userDetails.getAuthorities());
                     logger.debug("Using fallback authorities from UserDetails for user: " + username);
                 }

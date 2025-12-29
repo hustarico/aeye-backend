@@ -34,7 +34,18 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + roleId));
+        // Map roleId to role name consistent with JWT token
+        String roleName = mapRoleIdToRoleName(roleId);
+        return Collections.singletonList(new SimpleGrantedAuthority(roleName));
+    }
+    
+    private String mapRoleIdToRoleName(int roleId) {
+        return switch (roleId) {
+            case 1 -> "ROLE_ADMIN";
+            case 2 -> "ROLE_MANAGER";
+            case 3 -> "ROLE_USER";
+            default -> "ROLE_USER"; // Default fallback
+        };
     }
     
 

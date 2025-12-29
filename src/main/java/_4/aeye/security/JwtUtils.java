@@ -9,8 +9,6 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtUtils {
@@ -21,83 +19,87 @@ public class JwtUtils {
     @Value("${jwt.expirationMs}")
     private long jwtExpirationMs;
 
+    /* =========================
+       TOKEN GENERATION
+       ========================= */
+
     public String generateJwtToken(Authentication authentication) {
-        CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
-        
+
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
+
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        
-        // Extract role names from authorities
-        List<String> roles = userPrincipal.getAuthorities().stream()
-                .map(auth -> auth.getAuthority())
-                .collect(Collectors.toList());
-        
+
+        String roleName = mapRoleIdToRoleName(userDetails.getRoleId());
+
         return Jwts.builder()
-                .subject(userPrincipal.getUsername())
-                .claim("roles", roles)
+                .subject(userDetails.getUsername())
+                .claim("userId", userDetails.getId())
+                .claim("role", roleName)
                 .issuedAt(new Date())
-                .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(key)
                 .compact();
     }
 
-    public String generateTokenFromUsername(String username) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        
-        return Jwts.builder()
-                .subject(username)
-                .claim("roles", List.of("ROLE_USER"))
-                .issuedAt(new Date())
-                .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(key)
-                .compact();
+    /* =========================
+       TOKEN PARSING
+       ========================= */
+
+    public String getUsernameFromToken(String token) {
+        return getAllClaims(token).getSubject();
     }
 
-    public String getUserNameFromJwtToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+    public Integer getUserIdFromToken(String token) {
+        return getAllClaims(token).get("userId", Integer.class);
     }
 
-    public List<String> getRolesFromJwtToken(String token) {
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-        
-        Claims claims = Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        
-        Object rolesObj = claims.get("roles");
-        if (rolesObj == null) {
-            return null;
-        }
-        
-        // Handle both direct List<String> and List<Object> from JWT parsing
-        @SuppressWarnings("unchecked")
-        List<Object> rolesList = (List<Object>) rolesObj;
-        
-        return rolesList.stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
+    public String getRoleFromToken(String token) {
+        return getAllClaims(token).get("role", String.class);
     }
+
+    /* =========================
+       TOKEN VALIDATION
+       ========================= */
 
     public boolean validateJwtToken(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-            
+
             Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token);
+
             return true;
         } catch (Exception e) {
-            System.err.println("Invalid JWT token: " + e.getMessage());
+            System.err.println("Invalid JWT: " + e.getMessage());
+            return false;
         }
-        return false;
+    }
+
+    /* =========================
+       INTERNAL HELPERS
+       ========================= */
+
+    private Claims getAllClaims(String token) {
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    private String mapRoleIdToRoleName(int roleId) {
+        return switch (roleId) {
+            case 1 -> "ROLE_ADMIN";
+            case 2 -> "ROLE_MANAGER";
+            case 3 -> "ROLE_USER";
+            default -> throw new IllegalArgumentException(
+                    "Invalid role id: " + roleId
+            );
+        };
     }
 }

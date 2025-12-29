@@ -15,7 +15,7 @@ public class TestController {
     }
 
     @GetMapping("/secured")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('MANAGER')")
     public String securedEndpoint() {
         return "This is a secured endpoint - you must be logged in!";
     }

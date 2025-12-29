@@ -60,8 +60,15 @@ public class AuthController {
         try {
             userService.registerUser(registerRequest);
             
-            // Generate token for the newly registered user
-            String jwt = jwtUtils.generateTokenFromUsername(registerRequest.getUsername());
+            // Authenticate the newly registered user to generate token
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            registerRequest.getUsername(),
+                            registerRequest.getPassword()
+                    )
+            );
+            
+            String jwt = jwtUtils.generateJwtToken(authentication);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new AuthResponse(
