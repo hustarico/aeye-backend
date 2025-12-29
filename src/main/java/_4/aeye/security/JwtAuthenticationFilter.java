@@ -1,19 +1,25 @@
 package _4.aeye.security;
 
-import _4.aeye.services.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import _4.aeye.services.TokenBlacklistService;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -45,15 +51,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
                 
+                // Extract roles from JWT token
+                List<String> rolesFromToken = jwtUtils.getRolesFromJwtToken(jwt);
+                Collection<GrantedAuthority> authorities = new ArrayList<>();
+                
+                if (rolesFromToken != null && !rolesFromToken.isEmpty()) {
+                    for (String role : rolesFromToken) {
+                        authorities.add(new SimpleGrantedAuthority(role));
+                    }
+                    logger.debug("Loaded roles from JWT token for user: " + username);
+                } else {
+                    // Fallback to authorities from UserDetails if roles not in token
+                    authorities.addAll(userDetails.getAuthorities());
+                    logger.debug("Using fallback authorities from UserDetails for user: " + username);
+                }
+                
                 UsernamePasswordAuthenticationToken authentication = 
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
                 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                logger.debug("Authentication set for user: " + username);
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
+            logger.error("Cannot set user authentication: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

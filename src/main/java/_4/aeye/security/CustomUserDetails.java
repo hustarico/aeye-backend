@@ -6,34 +6,37 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
 
-    private Long id;
-    private String username;
-    private String password;
-    private boolean enabled;
-    private Collection<? extends GrantedAuthority> authorities;
+    private final Long id;
+    private final String username;
+    private final String password;
+    private final boolean enabled;
+    private final int roleId;
 
     public CustomUserDetails(User user) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.password = user.getPassword();
         this.enabled = user.isEnabled();
-        this.authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()))
-                .collect(Collectors.toList());
+        this.roleId = user.getRoleId();
     }
 
     public Long getId() {
         return id;
     }
 
+    public int getRoleId() {
+        return roleId;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + roleId));
     }
+    
 
     @Override
     public String getPassword() {

@@ -47,10 +47,10 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/logout").permitAll()
-                .requestMatchers(HttpMethod.GET, "/test/load","/users/phones").permitAll()
+                .requestMatchers(HttpMethod.GET, "/test/**","/users/phones").permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/api/images/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()
-                //.anyRequest().authenticated()
+                .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
