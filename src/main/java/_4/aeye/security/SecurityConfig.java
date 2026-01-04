@@ -35,25 +35,25 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
         auth
-            .userDetailsService(customUserDetailsService)
-            .passwordEncoder(passwordEncoder());
+                .userDetailsService(customUserDetailsService)
+                .passwordEncoder(passwordEncoder());
         return auth.build();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/logout").permitAll()
-                .requestMatchers(HttpMethod.GET, "/users/phones").permitAll()
-                .requestMatchers(HttpMethod.PATCH, "/api/images/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf.disable())
+                .cors(org.springframework.security.config.Customizer.withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/phones").permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/images/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
