@@ -1,0 +1,26 @@
+{
+  "groups": [
+    {
+      "name": "jwt",
+      "type": "_4.aeye.config.JwtProperties",
+      "sourceType": "_4.aeye.config.JwtProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "jwt.expiration-ms",
+      "type": "java.lang.Long",
+      "sourceType": "_4.aeye.config.JwtProperties",
+      "defaultValue": 0
+    },
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "sourceType": "_4.aeye.config.JwtProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

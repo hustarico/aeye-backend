@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-AeyeApplication<aeye>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "_4.aeye.AeyeApplication",
+            "projectName": "aeye",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
