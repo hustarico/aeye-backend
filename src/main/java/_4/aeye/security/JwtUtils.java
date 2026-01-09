@@ -19,14 +19,15 @@ public class JwtUtils {
     @Value("${jwt.expirationMs}")
     private long jwtExpirationMs;
 
-    /* =========================
-       TOKEN GENERATION
-       ========================= */
+    /*
+     * =========================
+     * TOKEN GENERATION
+     * =========================
+     */
 
     public String generateJwtToken(Authentication authentication) {
 
-        CustomUserDetails userDetails =
-                (CustomUserDetails) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
 
@@ -42,9 +43,11 @@ public class JwtUtils {
                 .compact();
     }
 
-    /* =========================
-       TOKEN PARSING
-       ========================= */
+    /*
+     * =========================
+     * TOKEN PARSING
+     * =========================
+     */
 
     public String getUsernameFromToken(String token) {
         return getAllClaims(token).getSubject();
@@ -58,9 +61,11 @@ public class JwtUtils {
         return getAllClaims(token).get("role", String.class);
     }
 
-    /* =========================
-       TOKEN VALIDATION
-       ========================= */
+    /*
+     * =========================
+     * TOKEN VALIDATION
+     * =========================
+     */
 
     public boolean validateJwtToken(String token) {
         try {
@@ -78,9 +83,11 @@ public class JwtUtils {
         }
     }
 
-    /* =========================
-       INTERNAL HELPERS
-       ========================= */
+    /*
+     * =========================
+     * INTERNAL HELPERS
+     * =========================
+     */
 
     private Claims getAllClaims(String token) {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
@@ -97,9 +104,7 @@ public class JwtUtils {
             case 1 -> "ROLE_ADMIN";
             case 2 -> "ROLE_MANAGER";
             case 3 -> "ROLE_USER";
-            default -> throw new IllegalArgumentException(
-                    "Invalid role id: " + roleId
-            );
+            default -> "ROLE_USER";
         };
     }
 }
